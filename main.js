@@ -211,7 +211,7 @@ healthcheck(callback) {
  	arr.push ({"work_end" : resultArry[resultObj].work_end}); 
  	arr.push ({"change_ticket_key" : resultArry[resultObj].sys_id}); 
  	callbackData = arr;
- 	console.log(`\nResponse returned from GET request:\n${JSON.stringify(callbackData)}`);
+ 	console.log(`\nResponse returned from GET request:\n${callbackData}`);
  	}
  	} 
  	return callback(callbackData, callbackError);
@@ -251,8 +251,9 @@ healthcheck(callback) {
  	arr.push ({"work_start" : result.work_start}); 
  	arr.push ({"work_end" : result.work_end}); 
  	arr.push ({"change_ticket_key" : result.sys_id}); 
- 	callbackData = Object.assign({}, arr);
- 	console.log(`\nResponse returned from POST request:\n${JSON.stringify(callbackData)}`);
+
+ 	callbackData = arr;
+ 	console.log(`\nResponse returned from POST request:\n${callbackData}`);
  	} 
  	return callback(callbackData,callbackError);
  	});

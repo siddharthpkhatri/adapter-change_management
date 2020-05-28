@@ -63,26 +63,26 @@ class ServiceNowConnector {
     this.sendRequest(getCallOptions, (results, error) => callback(results, error));
   }
 
-  /**
-   * @method constructUri
-   * @description Build and return the proper URI by appending an optionally passed
-   *   [URL query string]{@link https://en.wikipedia.org/wiki/Query_string}.
-   *
-   * @param {string} serviceNowTable - The table target of the ServiceNow table API.
-   * @param {string} [query] - Optional URL query string.
-   *
-   * @return {string} ServiceNow URL
+
+/**
+ * @function constructUri
+ * @description Build and return the proper URI by appending an optionally passed
+ *   [URL query string]{@link https://en.wikipedia.org/wiki/Query_string}.
+ *
+ * @param {string} serviceNowTable - The table target of the ServiceNow table API.
+ * @param {string} [query] - Optional URL query string.
+ *
+ * @return {string} ServiceNow URL
  */
-  constructUri(serviceNowTable, query = null) {
+constructUri(serviceNowTable, query = null) {
   let uri = `/api/now/table/${serviceNowTable}`;
   if (query) {
     uri = uri + '?' + query;
   }
   return uri;
 }
-
 /**
- * @method isHibernating
+ * @function isHibernating
  * @description Checks if request function responded with evidence of
  *   a hibernating ServiceNow instance.
  *
@@ -91,13 +91,12 @@ class ServiceNowConnector {
  * @return {boolean} Returns true if instance is hibernating. Otherwise returns false.
  */
 isHibernating(response) {
-  return response.body.includes('Instance Hibernating page')
+  return response.body.includes('Hibernating Instance')
   && response.body.includes('<html>')
   && response.statusCode === 200;
 }
-
 /**
- * @method processRequestResults
+ * @function processRequestResults
  * @description Inspect ServiceNow API response for an error, bad response code, or
  *   a hibernating instance. If any of those conditions are detected, return an error.
  *   Else return the API's response.
@@ -119,25 +118,27 @@ processRequestResults(error, response, body, callback) {
    * This function must not check for a hibernating instance;
    * it must call function isHibernating.
    */
-    let callbackData = null;
-    let callbackError = null;
-    if (error) {
-        console.error('Error present.');
-        callbackError = error;
-    } else if (!validResponseRegex.test(response.statusCode)) {
-        console.error('Bad response code.');
-        callbackError = response;
-    } else if (this.isHibernating(response)) {
-        callbackError = 'Service Now instance is hibernating';
-        console.error(callbackError);
-    } else {
-        callbackData = response;
-    } 
-    return callback(callbackData, callbackError);
+let callbackData = null;
+let callbackError = null;
+if (error) {
+console.error(error);
+console.error('Error present.');
+callbackError = error;
+} else if (!validResponseRegex.test(response.statusCode)) {
+console.error('Bad response code.'+ response.body);
+callbackError = response;
+} else if (this.isHibernating(response)) {
+callbackError = 'Service Now instance is hibernating';
+console.error(callbackError);
+} else {
+callbackData = response;
+} 
+
+return callback(callbackData, callbackError);
 }
 
 /**
- * @method sendRequest
+ * @function sendRequest
  * @description Builds final options argument for request function
  *   from global const options and parameter callOptions.
  *   Executes request call, then verifies response.
@@ -155,31 +156,26 @@ sendRequest(callOptions, callback) {
   // Initialize return arguments for callback
   let uri;
   if (callOptions.query)
-    uri = this.constructUri(callOptions.serviceNowTable, callOptions.query);
+    this.uri = this.constructUri(callOptions.serviceNowTable, callOptions.query);
   else
-    uri = this.constructUri(callOptions.serviceNowTable);
-  /**
-   * You must build the requestOptions object.
-   * This is not a simple copy/paste of the requestOptions object
-   * from the previous lab. There should be no
-   * hardcoded values.
-   */
+    this.uri = this.constructUri(callOptions.serviceNowTable);
+    
   const requestOptions = {
-    method: callOptions.method,
-    auth : {
-    user: this.options.username,
-    pass: this.options.password,
+   method: callOptions.method,
+   auth : {
+   user: this.options.username,
+   pass: this.options.password,
 },
 baseUrl: this.options.url,
-uri: uri
+uri: this.uri
 };
-  request(requestOptions, (error, response, body) => {
+    request(requestOptions, (error, response, body) => {
     this.processRequestResults(error, response, body, (processedResults, processedError) => callback(processedResults, processedError));
   });
 }
 
 /**
- * @method post
+ * @function post
  * @description Call the ServiceNow POST API. Sets the API call's method,
  *   then calls sendRequest().
  *
@@ -190,13 +186,10 @@ uri: uri
  *   Will be HTML text if hibernating instance.
  * @param {error} callback.error - The error property of callback.
  */
-post(callback) {
-  let postCallOptions = this.options;
-  postCallOptions.method = 'POST';
-  this.sendRequest(postCallOptions, (results, error) => callback(results, error));
+post(callOptions, callback) {
+  callOptions.method = 'POST';
+  this.sendRequest(callOptions, (results, error) => callback(results, error));
 }
 
 }
-
-
 module.exports = ServiceNowConnector;
