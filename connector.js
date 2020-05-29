@@ -58,7 +58,7 @@ class ServiceNowConnector {
     get(callback) {
         let getCallOptions = this.options;
         getCallOptions.method = 'GET';
-        getCallOptions.query = 'sysparm_limit=1';
+        getCallOptions.query = 'sysparm_limit=2';
         this.sendRequest(getCallOptions, (results, error) => callback(results, error));
     }
 
@@ -136,12 +136,23 @@ class ServiceNowConnector {
      */
     processRequestResults(error, response, body, callback) {
 
-        if (error || this.isHibernating(response)) {
-            callback(null, error);
-        }
-        else {
-            callback(response, null);
-        }
+let callbackData = null;
+let callbackError = null;
+if (error) {
+console.error(error);
+console.error('Error present.');
+callbackError = error;
+} else if (!validResponseRegex.test(response.statusCode)) {
+console.error('Bad response code.'+ response.body);
+callbackError = response;
+} else if (this.isHibernating(response)) {
+callbackError = 'Service Now instance is hibernating';
+console.error(callbackError);
+} else {
+callbackData = response;
+} 
+
+return callback(callbackData, callbackError);
     }
 
 

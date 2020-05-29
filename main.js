@@ -158,11 +158,11 @@ class ServiceNowAdapter extends EventEmitter {
         this.connector.get((data, error) => {
             if (error) {
                 console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
-                callback(error);
+                callback(null,error);
             }
             else {
                 let body = null;
-                //log.info(`\nResponse returned from GET request:\n${JSON.stringify(data)}`);
+                log.info(`\nResponse returned from GET request:\n${JSON.stringify(data)}`);
                 if (typeof data == 'object') {
                     if (data.body) {
                         body = JSON.parse(data.body);
@@ -171,7 +171,7 @@ class ServiceNowAdapter extends EventEmitter {
                             result[index] = this.getResult(obj);
                         });
                         log.info("Retunring " + JSON.stringify(result))
-                        callback(result);
+                        callback(result,null);
                         //return result;
                     }
                 }
@@ -192,6 +192,7 @@ class ServiceNowAdapter extends EventEmitter {
         this.connector.post((data, error) => {
             if (error) {
                 console.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
+                callback(null,error);
             }
             else {
                 let result = null;
@@ -203,7 +204,7 @@ class ServiceNowAdapter extends EventEmitter {
                         result = this.getResult(result);
                     }
                 }
-                callback(result);
+                callback(result,null);
             }
         });
     }
